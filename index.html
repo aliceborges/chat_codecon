@@ -1,48 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>FastAPI Chat</title>
+    <meta charset="UTF-8">
+    <title>DuckChat 🐤</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fff8dc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #f5b301;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        #login, #chatContainer {
+            background-color: #fffdf4;
+            border: 2px solid #f5b301;
+            border-radius: 12px;
+            padding: 20px;
+            width: 350px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #f5b301;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #e0a700;
+        }
+
+        #chat {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #f5b301;
+            border-radius: 6px;
+            padding: 10px;
+            background-color: #fff;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            word-wrap: break-word;
+        }
+
+        .self {
+            align-self: flex-end;
+            background-color: #f9d75c;
+            color: #000;
+            border-bottom-right-radius: 0;
+        }
+
+        .other {
+            align-self: flex-start;
+            background-color: #eeeeee;
+            color: #333;
+            border-bottom-left-radius: 0;
+        }
+
+        .input-control {
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
-    <h1>FastAPI Chat</h1>
+
+    <h1>🐤 DuckChat</h1>
+
     <div id="login">
-        <input type="text" id="usernameInput" placeholder="Digite seu nome" />
-        <button onclick="joinChat()">Entrar</button>
+        <input type="text" id="usernameInput" class="input-control" placeholder="Digite seu nome de pato 🐣" />
+        <button onclick="joinChat()">Entrar no lago 🦆</button>
     </div>
 
     <div id="chatContainer" style="display:none;">
-        <div id="chat" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></div>
-        <input type="text" id="messageInput" autocomplete="off"/>
+        <div id="chat"></div>
+        <input type="text" id="messageInput" placeholder="Diga algo..." autocomplete="off" class="input-control" />
         <button onclick="sendMessage()">Enviar</button>
     </div>
 
     <script>
         let ws;
+        let username;
 
         function joinChat() {
-            const username = document.getElementById("usernameInput").value.trim();
+            username = document.getElementById("usernameInput").value.trim();
             if (!username) return alert("Nome de usuário é obrigatório!");
 
             ws = new WebSocket(`ws://localhost:8000/ws/${encodeURIComponent(username)}`);
 
-            ws.onopen = function() {
+            ws.onopen = function () {
                 document.getElementById("login").style.display = "none";
                 document.getElementById("chatContainer").style.display = "block";
             };
 
-            ws.onmessage = function(event) {
+            ws.onmessage = function (event) {
                 const messages = document.getElementById('chat');
                 const message = document.createElement('div');
-                message.textContent = event.data;
+                message.classList.add('message');
+
+                const isOwnMessage = event.data.startsWith(`${username}:`);
+                if (isOwnMessage) {
+                    message.classList.add('self');
+                    message.textContent = event.data.replace(`${username}:`, "Você:");
+                } else {
+                    message.classList.add('other');
+                    message.textContent = event.data;
+                }
+
                 messages.appendChild(message);
                 messages.scrollTop = messages.scrollHeight;
+            };
+
+            ws.onclose = function (event) {
+                if (event.code === 4000) {
+                    alert("Este nome de usuário já está em uso. Escolha outro.");
+                } else {
+                    alert("Conexão encerrada.");
+                }
             };
         }
 
         function sendMessage() {
             const input = document.getElementById("messageInput");
-            if (input.value.trim()) {
-                ws.send(input.value);
+            const message = input.value.trim();
+            if (message) {
+                ws.send(message);
                 input.value = '';
             }
         }

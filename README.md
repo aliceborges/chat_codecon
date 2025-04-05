@@ -5,8 +5,8 @@ Este projeto implementa um CRUD básico de usuários com autenticação via Cler
 ## Instalação
 1. Clone o repositório:
    ```sh
-   git clone https://github.com/aliceborges/fastapi-clerk-crud.git
-   cd fastapi-clerk-crud
+   git clone https://github.com/aliceborges/chat_codecon.git
+   cd chat_codecon
    ```
 
 2. Crie um ambiente virtual e instale as dependências:

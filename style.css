@@ -1,0 +1,283 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fff8dc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+h1 {
+    color: #f5b301;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+#login, #chatContainer {
+    background-color: #fffdf4;
+    border: 2px solid #f5b301;
+    border-radius: 12px;
+    padding: 20px;
+    width: 80%;
+    max-width: 800px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #f5b301;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #e0a700;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.chat {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #f5b301;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #fff;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.message {
+    max-width: 75%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    word-wrap: break-word;
+    margin: 2px 0;
+}
+
+.self {
+    align-self: flex-end;
+    background-color: #f9d75c;
+    color: #000;
+    border-bottom-right-radius: 0;
+}
+
+.other {
+    align-self: flex-start;
+    background-color: #eeeeee;
+    color: #333;
+    border-bottom-left-radius: 0;
+}
+
+.system {
+    align-self: center;
+    background-color: #e1f5fe;
+    color: #0277bd;
+    font-style: italic;
+    font-size: 0.9em;
+    padding: 4px 10px;
+}
+
+.private {
+    background-color: #ffecb3;
+    border: 1px dashed #f5b301;
+}
+
+.private.self {
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+}
+
+.private.other {
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+}
+
+.input-control {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.notification {
+    align-self: center;
+    background-color: #ffecb3;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin: 5px 0;
+    font-size: 0.9em;
+    text-align: center;
+    width: 90%;
+    animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+#notificationSound {
+    display: none;
+}
+
+.hashtag {
+    color: #1e88e5;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.mention {
+    color: #7b1fa2;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.tab {
+    padding: 8px 15px;
+    background-color: #f0f0f0;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tab.active {
+    background-color: #f5b301;
+    color: white;
+}
+
+.tab:not(.active):hover {
+    background-color: #e0e0e0;
+}
+
+.tab-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 5px;
+    background-color: transparent;
+}
+
+.tab-indicator.new {
+    background-color: #f44336;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.sidebar {
+    width: 200px;
+    padding: 10px;
+    background-color: #fffdf4;
+    border-right: 1px solid #f5b301;
+    height: 100%;
+    position: absolute;
+    left: -220px;
+    top: 0;
+    transition: left 0.3s;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.sidebar-toggle {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    z-index: 101;
+}
+
+.user-list, .hashtag-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.user-list li, .hashtag-list li {
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.user-list li:hover, .hashtag-list li:hover {
+    background-color: #f0f0f0;
+}
+
+.timestamp {
+    font-size: 0.7em;
+    color: #777;
+    margin-top: 3px;
+    text-align: right;
+}
+
+.message-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.message-controls button {
+    flex: 1;
+}
+
+.hashtag-chip {
+    display: inline-block;
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.mention-chip {
+    display: inline-block;
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}

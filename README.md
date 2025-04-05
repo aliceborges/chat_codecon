@@ -18,5 +18,5 @@ Este projeto implementa um CRUD básico de usuários com autenticação via Cler
 
 3. Execute o servidor:
    ```sh
-   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
    ```

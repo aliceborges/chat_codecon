@@ -93,14 +93,43 @@
             width: 100%;
             box-sizing: border-box;
         }
+
+        .notification {
+            align-self: center;
+            background-color: #ffecb3;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin: 5px 0;
+            font-size: 0.9em;
+            text-align: center;
+            width: 90%;
+            animation: pulse 0.5s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        #notificationSound {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <h1>🐤 DuckChat</h1>
 
+    <!-- Elemento de áudio para tocar o som -->
+    <audio id="notificationSound" preload="auto">
+        <source src="sounds/quack.wav" type="audio/wav">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
     <div id="login">
-        <input type="text" id="usernameInput" class="input-control" placeholder="Digite seu nome de pato 🐣" />
+        <input type="text" id="usernameInput" class="input-control" placeholder="Digite seu nome (ex: @seunome)" />
         <button onclick="joinChat()">Entrar no lago 🦆</button>
     </div>
 
@@ -113,30 +142,85 @@
     <script>
         let ws;
         let username;
+        let notificationSound;
+        let isWindowFocused = true;
+
+        window.onload = function() {
+            notificationSound = document.getElementById('notificationSound');
+            try {
+                notificationSound.load();
+            } catch(e) {
+                console.error("Erro ao carregar o som:", e);
+            }
+        };
+
+        window.onfocus = function() { 
+            isWindowFocused = true; 
+        };
+        
+        window.onblur = function() { 
+            isWindowFocused = false; 
+        };
+
+        function playNotificationSound() {
+            try {
+                notificationSound.currentTime = 0;
+                notificationSound.play().catch(e => console.error("Erro ao reproduzir som:", e));
+                
+                if (!isWindowFocused && Notification.permission === "granted") {
+                    new Notification("DuckChat - Nova menção", {
+                        body: "Você foi mencionado no chat!",
+                        icon: "https://cdn-icons-png.flaticon.com/512/616/616408.png"
+                    });
+                }
+            } catch(e) {
+                console.error("Erro ao reproduzir som:", e);
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission().then(permission => {
+                    console.log("Permissão para notificações:", permission);
+                });
+            }
+        }
 
         function joinChat() {
             username = document.getElementById("usernameInput").value.trim();
             if (!username) return alert("Nome de usuário é obrigatório!");
+            if (!username.startsWith('@')) return alert("Nome de usuário deve começar com @");
+            if (!/^@[a-zA-Z0-9_]+$/.test(username)) return alert("Nome de usuário só pode conter letras, números e underscores");
+
+            requestNotificationPermission();
 
             ws = new WebSocket(`ws://localhost:8000/ws/${encodeURIComponent(username)}`);
 
             ws.onopen = function () {
                 document.getElementById("login").style.display = "none";
                 document.getElementById("chatContainer").style.display = "block";
+                document.getElementById("messageInput").focus();
             };
 
             ws.onmessage = function (event) {
                 const messages = document.getElementById('chat');
                 const message = document.createElement('div');
-                message.classList.add('message');
-
-                const isOwnMessage = event.data.startsWith(`${username}:`);
-                if (isOwnMessage) {
-                    message.classList.add('self');
-                    message.textContent = event.data.replace(`${username}:`, "Você:");
+                
+                if (event.data.includes("🔔 Você foi mencionado:")) {
+                    message.classList.add('notification');
+                    message.textContent = event.data.replace("🔔 Você foi mencionado:", "🔔 Mencionado:");
+                
+                    playNotificationSound();
                 } else {
-                    message.classList.add('other');
-                    message.textContent = event.data;
+                    message.classList.add('message');
+                    const isOwnMessage = event.data.startsWith(`${username}:`);
+                    if (isOwnMessage) {
+                        message.classList.add('self');
+                        message.textContent = event.data.replace(`${username}:`, "Você:");
+                    } else {
+                        message.classList.add('other');
+                        message.textContent = event.data;
+                    }
                 }
 
                 messages.appendChild(message);
@@ -146,10 +230,21 @@
             ws.onclose = function (event) {
                 if (event.code === 4000) {
                     alert("Este nome de usuário já está em uso. Escolha outro.");
+                } else if (event.code === 4001) {
+                    alert("Nome de usuário deve começar com @.");
+                } else if (event.code === 4002) {
+                    alert("Nome de usuário só pode conter letras, números e underscores.");
                 } else {
                     alert("Conexão encerrada.");
                 }
             };
+
+            // Permitir enviar mensagem com Enter
+            document.getElementById("messageInput").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") {
+                    sendMessage();
+                }
+            });
         }
 
         function sendMessage() {

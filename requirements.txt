@@ -9,3 +9,5 @@ dotenv
 psycopg2-binary
 email_validator
 uvicorn[standard]
+websockets
+asyncio

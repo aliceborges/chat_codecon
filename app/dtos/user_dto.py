@@ -1,9 +1,7 @@
 from pydantic import BaseModel, EmailStr
 
 class UserCreateDTO(BaseModel):
-    name: str
-    email: EmailStr
-
+    username: str
+    
 class UserUpdateDTO(BaseModel):
-    name: str | None = None
-    email: EmailStr | None = None
+    username: str

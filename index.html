@@ -5,25 +5,46 @@
 </head>
 <body>
     <h1>FastAPI Chat</h1>
-    <div id="chat"></div>
-    <input type="text" id="messageInput" autocomplete="off"/>
-    <button onclick="sendMessage()">Send</button>
+    <div id="login">
+        <input type="text" id="usernameInput" placeholder="Digite seu nome" />
+        <button onclick="joinChat()">Entrar</button>
+    </div>
+
+    <div id="chatContainer" style="display:none;">
+        <div id="chat" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;"></div>
+        <input type="text" id="messageInput" autocomplete="off"/>
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
 
     <script>
-        const client_id = Math.floor(Math.random() * 1000);
-        const ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+        let ws;
 
-        ws.onmessage = function(event) {
-            const messages = document.getElementById('chat');
-            const message = document.createElement('div');
-            message.textContent = event.data;
-            messages.appendChild(message);
-        };
+        function joinChat() {
+            const username = document.getElementById("usernameInput").value.trim();
+            if (!username) return alert("Nome de usuário é obrigatório!");
+
+            ws = new WebSocket(`ws://localhost:8000/ws/${encodeURIComponent(username)}`);
+
+            ws.onopen = function() {
+                document.getElementById("login").style.display = "none";
+                document.getElementById("chatContainer").style.display = "block";
+            };
+
+            ws.onmessage = function(event) {
+                const messages = document.getElementById('chat');
+                const message = document.createElement('div');
+                message.textContent = event.data;
+                messages.appendChild(message);
+                messages.scrollTop = messages.scrollHeight;
+            };
+        }
 
         function sendMessage() {
             const input = document.getElementById("messageInput");
-            ws.send(input.value);
-            input.value = '';
+            if (input.value.trim()) {
+                ws.send(input.value);
+                input.value = '';
+            }
         }
     </script>
 </body>

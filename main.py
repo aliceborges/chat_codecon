@@ -26,7 +26,14 @@ class ConnectionManager:
         if username in self.active_connections:
             await websocket.close(code=4000, reason="Nome de usuário já em uso.")
             return False
-            
+        
+        if username in self.active_connections:
+            try:
+                await self.active_connections[username].close(code=4003, reason="Nova conexão do mesmo usuário")
+            except:
+                pass
+            del self.active_connections[username]
+
         await websocket.accept()
         self.active_connections[username] = websocket
         
@@ -117,7 +124,12 @@ manager = ConnectionManager()
 async def websocket_endpoint(websocket: WebSocket, username: str):
     is_connected = await manager.connect(username, websocket)
     if not is_connected:
-        return
+        if username in manager.active_connections:
+            is_connected = await manager.reconnect(username, websocket)
+            if not is_connected:
+                return
+        else:
+            return
 
     duck_emoji_in = random.choice(duck_emojis)
     join_message = {

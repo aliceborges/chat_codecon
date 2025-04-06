@@ -9,6 +9,9 @@ let unreadMessages = {};
 let activeUsers = [];
 let popularHashtags = [];
 let activeMenu = 'public';
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_DELAY = 3000; 
 
 document.addEventListener('DOMContentLoaded', function() {
     notificationSound = document.getElementById('notificationSound');
@@ -53,13 +56,91 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     setupMenuListeners();
+
+    const storedUsername = localStorage.getItem('duckchat_username');
+    if (storedUsername) {
+        username = storedUsername;
+        document.getElementById('usernameInput').value = username;
+        connectWebSocket();
+    }
+
+    document.getElementById('logoutButton')?.addEventListener('click', logout);
 });
+
+async function connectWebSocket() {
+    if (!username) {
+        const storedUsername = localStorage.getItem('duckchat_username');
+        if (storedUsername) {
+            username = storedUsername;
+            document.getElementById('usernameInput').value = username;
+        } else {
+            return;
+        }
+    }
+
+    ws = new WebSocket(`ws://localhost:8000/ws/${encodeURIComponent(username)}`);
+
+    ws.onopen = function() {
+        reconnectAttempts = 0;
+        document.getElementById("login").style.display = "none";
+        document.getElementById("chatContainer").style.display = "block";
+        document.getElementById("messageInput").focus();
+        document.getElementById("currentUsername").textContent = username;
+        document.getElementById("logoutButton").classList.remove("hidden");
+        
+        fetchActiveUsers();
+        fetchHashtags();
+    };
+
+    ws.onmessage = function(event) {
+        try {
+            const messageData = JSON.parse(event.data);
+            processMessage(messageData);
+        } catch(e) {
+            console.error("Erro ao processar mensagem:", e);
+        }
+    };
+
+    ws.onclose = function(event) {
+        if (event.code === 4000) {
+            alert("Este nome de usuário já está em uso. Escolha outro.");
+        } else if (event.code === 4001) {
+            alert("Nome de usuário deve começar com @.");
+        } else if (event.code === 4002) {
+            alert("Nome de usuário só pode conter letras, números e underscores.");
+        } else if (username && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            setTimeout(connectWebSocket, RECONNECT_DELAY);
+        }
+    };
+
+    ws.onerror = function(error) {
+        console.error("WebSocket error:", error);
+    };
+}
+
+
+function logout() {
+    localStorage.removeItem('duckchat_username');
+    
+    if (ws) {
+        ws.close();
+    }
+    
+    document.getElementById("chatContainer").style.display = "none";
+    document.getElementById("login").style.display = "block";
+    document.getElementById("usernameInput").value = "";
+    document.getElementById("usernameInput").focus();
+}
 
 function joinChat() {
     username = document.getElementById("usernameInput").value.trim();
     if (!username) return alert("Nome de usuário é obrigatório!");
     if (!username.startsWith('@')) return alert("Nome de usuário deve começar com @");
     if (!/^@[a-zA-Z0-9_]+$/.test(username)) return alert("Nome de usuário só pode conter letras, números e underscores");
+
+    localStorage.setItem('duckchat_username', username);
+    connectWebSocket();
 
     requestNotificationPermission();
 
@@ -109,8 +190,6 @@ function joinChat() {
             alert("Nome de usuário deve começar com @.");
         } else if (event.code === 4002) {
             alert("Nome de usuário só pode conter letras, números e underscores.");
-        } else {
-            alert("Conexão encerrada.");
         }
     };
 }

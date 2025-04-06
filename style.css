@@ -357,3 +357,18 @@ button:hover {
     border-radius: 10px;
     font-size: 0.8em;
 }
+
+.logout-button {
+    background-color: #f44336;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.logout-button:hover {
+    background-color: #d32f2f;
+}

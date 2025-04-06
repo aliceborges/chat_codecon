@@ -17,10 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Erro ao carregar o som:", e);
     }
     
-    document.getElementById('sidebarToggle').addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('open');
-    });
-    
     document.getElementById('loginButton').addEventListener('click', joinChat);
     document.getElementById('usernameInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') joinChat();

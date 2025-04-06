@@ -6,34 +6,62 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>🐤 DuckChat</h1>
-
-    <audio id="notificationSound" preload="auto">
-        <source src="sounds/quack.wav" type="audio/wav">
-        Seu navegador não suporta o elemento de áudio.
-    </audio>
-
     <div id="login">
+        <h1>🐤 DuckChat</h1>
         <input type="text" id="usernameInput" class="input-control" placeholder="Digite seu nome (ex: @seunome)" />
         <button id="loginButton" class="full-width">Entrar no lago 🦆</button>
     </div>
 
     <div id="chatContainer" style="display:none;">
-        <div id="tabs" class="tabs">
-            <div id="tab-public" class="tab active" data-tab-id="public">
-                Público <span class="tab-indicator"></span>
+        <div class="chat-header">
+            <h1>🐤 DuckChat <span id="currentUsername"></span></h1>
+        </div>
+        
+        <div class="chat-layout">
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Menu</h3>
+                    <ul class="menu-list">
+                        <li class="menu-item active" data-tab="public">Mensagens Públicas</li>
+                        <li class="menu-item" data-tab="private">Conversas Privadas</li>
+                        <li class="menu-item" data-tab="hashtags">Hashtags Populares</li>
+                    </ul>
+                </div>
+                
+                <div id="privateConversations" class="sidebar-section hidden">
+                    <h3>Conversas Privadas</h3>
+                    <ul id="privateChatsList" class="conversation-list"></ul>
+                </div>
+                
+                <div id="popularHashtags" class="sidebar-section hidden">
+                    <h3>Hashtags Populares</h3>
+                    <ul id="hashtagsList" class="hashtag-list"></ul>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div id="tabs" class="tabs">
+                    <div id="tab-public" class="tab active" data-tab-id="public">
+                        Público <span class="tab-indicator"></span>
+                    </div>
+                </div>
+                
+                <div id="chatAreas">
+                    <div id="public-chat" class="chat"></div>
+                </div>
+                
+                <div class="message-controls">
+                    <input type="text" id="messageInput" placeholder="Diga algo..." autocomplete="off" class="input-control" />
+                    <button id="sendButton">Enviar</button>
+                </div>
             </div>
         </div>
-        
-        <div id="chatAreas">
-            <div id="public-chat" class="chat"></div>
-        </div>
-        
-        <div class="message-controls">
-            <input type="text" id="messageInput" placeholder="Diga algo..." autocomplete="off" class="input-control" />
-            <button id="sendButton">Enviar</button>
-        </div>
     </div>
+
+    <audio id="notificationSound" preload="auto">
+        <source src="sounds/quack.wav" type="audio/wav">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
 
     <script src="script.js"></script>
 </body>

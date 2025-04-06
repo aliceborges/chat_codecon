@@ -8,6 +8,7 @@ let hashtagChats = {};
 let unreadMessages = {};
 let activeUsers = [];
 let popularHashtags = [];
+let activeMenu = 'public';
 
 document.addEventListener('DOMContentLoaded', function() {
     notificationSound = document.getElementById('notificationSound');
@@ -50,6 +51,8 @@ document.addEventListener('DOMContentLoaded', function() {
             searchHashtag(hashtag);
         }
     });
+
+    setupMenuListeners();
 });
 
 function joinChat() {
@@ -66,6 +69,7 @@ function joinChat() {
         document.getElementById("login").style.display = "none";
         document.getElementById("chatContainer").style.display = "block";
         document.getElementById("messageInput").focus();
+        document.getElementById("currentUsername").textContent = username;
         
         fetchActiveUsers();
         fetchHashtags();
@@ -109,6 +113,88 @@ function joinChat() {
             alert("Conexão encerrada.");
         }
     };
+}
+
+function setupMenuListeners() {
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const tab = this.getAttribute('data-tab');
+            switchMenu(tab);
+        });
+    });
+}
+
+function switchMenu(menu) {
+    activeMenu = menu;
+    
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-tab') === menu) {
+            item.classList.add('active');
+        }
+    });
+    
+    document.getElementById('privateConversations').classList.add('hidden');
+    document.getElementById('popularHashtags').classList.add('hidden');
+    
+    if (menu === 'private') {
+        document.getElementById('privateConversations').classList.remove('hidden');
+        updatePrivateConversationsList();
+    } else if (menu === 'hashtags') {
+        document.getElementById('popularHashtags').classList.remove('hidden');
+        updateHashtagsList();
+    }
+}
+
+function updatePrivateConversationsList() {
+    const list = document.getElementById('privateChatsList');
+    list.innerHTML = '';
+    
+    const privateChatKeys = Object.keys(privateChats);
+    
+    if (privateChatKeys.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'Nenhuma conversa privada';
+        li.style.fontStyle = 'italic';
+        li.style.color = '#888';
+        li.style.cursor = 'default';
+        list.appendChild(li);
+        return;
+    }
+    
+    privateChatKeys.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = user;
+        li.addEventListener('click', () => startPrivateChat(user));
+        list.appendChild(li);
+    });
+}
+
+function updateHashtagsList() {
+    const list = document.getElementById('hashtagsList');
+    list.innerHTML = '';
+    
+    if (popularHashtags.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'Nenhuma hashtag encontrada';
+        li.style.fontStyle = 'italic';
+        li.style.color = '#888';
+        li.style.cursor = 'default';
+        list.appendChild(li);
+        return;
+    }
+    
+    popularHashtags.sort((a, b) => b.count - a.count);
+    
+    popularHashtags.forEach(tag => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span>${tag.name}</span>
+            <span class="hashtag-count">${tag.count}</span>
+        `;
+        li.addEventListener('click', () => searchHashtag(tag.name));
+        list.appendChild(li);
+    });
 }
 
 function processMessage(data) {
@@ -415,7 +501,9 @@ function fetchHashtags() {
         .then(response => response.json())
         .then(data => {
             popularHashtags = data.hashtags || [];
-            updateHashtagList();
+            if (activeMenu === 'hashtags') {
+                updateHashtagsList();
+            }
         })
         .catch(error => console.error('Erro ao buscar hashtags:', error));
 }

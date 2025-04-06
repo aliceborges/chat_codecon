@@ -173,4 +173,5 @@ async def get_active_users():
 
 @app.get("/api/hashtags")
 async def get_hashtags():
-    return {"hashtags": list(manager.hashtags.keys())}
+    hashtags_with_count = [{"name": tag, "count": len(messages)} for tag, messages in manager.hashtags.items()]
+    return {"hashtags": hashtags_with_count}
